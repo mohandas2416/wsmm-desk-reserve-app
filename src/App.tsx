@@ -29,9 +29,9 @@ interface Desk {
 }
 
 const MAP_IMAGES = [
-  'https://via.placeholder.com/300x200?text=Desk+Map+1',
-  'https://via.placeholder.com/300x200?text=Desk+Map+2',
-  'https://via.placeholder.com/300x200?text=Desk+Map+3',
+  'https://online.visual-paradigm.com/images/features/floor-plan-designer/work-office-floorplan-maker.png',
+  'https://online.visual-paradigm.com/images/features/floor-plan-designer/work-office-floorplan-maker.png',
+  'https://online.visual-paradigm.com/images/features/floor-plan-designer/work-office-floorplan-maker.png',
 ];
 
 const App: React.FC = () => {
