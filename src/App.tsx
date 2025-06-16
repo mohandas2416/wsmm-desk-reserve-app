@@ -19,7 +19,7 @@ import {
   IonDatetimeButton,
 } from '@ionic/react';
 import React, { useState } from 'react';
-import './A pp.css';
+import './App.css';
 
 interface Desk {
   id: number;
