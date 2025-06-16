@@ -16,9 +16,10 @@ import {
   IonSelectOption,
   IonAlert,
   IonDatetime,
-  IonDatetimeButton
+  IonDatetimeButton,
 } from '@ionic/react';
 import React, { useState } from 'react';
+import './A pp.css';
 
 interface Desk {
   id: number;
@@ -35,11 +36,7 @@ const MAP_IMAGES = [
 
 const App: React.FC = () => {
   const today = new Date();
-  const formattedToday = today.toLocaleDateString('en-US', {
-    month: '2-digit',
-    day: '2-digit',
-    year: 'numeric'
-  });
+  const formattedToday = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}-${today.getFullYear()}`;
 
   const [currentTab, setCurrentTab] = useState<'available' | 'reserved'>('available');
   const [selectedDate, setSelectedDate] = useState(formattedToday);
@@ -53,13 +50,13 @@ const App: React.FC = () => {
   const [deskToUnreserveIndex, setDeskToUnreserveIndex] = useState<number | null>(null);
   const [showDateModal, setShowDateModal] = useState(false);
 
-  const [availableDesks, setAvailableDesks] = useState<Desk[]>([
+  const [availableDesks] = useState<Desk[]>([
     {
       id: 1,
       name: 'Desk A1',
       location: 'Floor 1',
       slots: [
-        { date: formattedToday, times: ['09:00 AM - 11:00 AM', '01:00 PM - 03:00 PM'] },
+        { date: '06-17-2025', times: ['09:00 AM - 11:00 AM', '02:00 PM - 04:00 PM'] },
         { date: '06-18-2025', times: ['10:00 AM - 12:00 PM'] },
       ],
     },
@@ -68,8 +65,8 @@ const App: React.FC = () => {
       name: 'Desk A2',
       location: 'Floor 2',
       slots: [
-        { date: formattedToday, times: ['11:00 AM - 01:00 PM'] },
-        { date: '06-19-2025', times: ['02:00 PM - 04:00 PM'] },
+        { date: '06-17-2025', times: ['11:00 AM - 01:00 PM'] },
+        { date: '06-19-2025', times: ['02:00 PM - 04:00 PM', '04:00 PM - 06:00 PM'] },
       ],
     },
     {
@@ -78,6 +75,16 @@ const App: React.FC = () => {
       location: 'Floor 3',
       slots: [
         { date: '06-18-2025', times: ['08:00 AM - 10:00 AM'] },
+        { date: '06-20-2025', times: ['09:00 AM - 11:00 AM'] },
+      ],
+    },
+    {
+      id: 4,
+      name: 'Desk C3',
+      location: 'Floor 4',
+      slots: [
+        { date: '06-19-2025', times: ['01:00 PM - 03:00 PM'] },
+        { date: '06-20-2025', times: ['11:00 AM - 01:00 PM'] },
       ],
     },
   ]);
@@ -156,18 +163,10 @@ const App: React.FC = () => {
                   id="date-select"
                   presentation="date"
                   onIonChange={(e) => {
-                    let value = e.detail.value;
-                    if (Array.isArray(value)) {
-                      value = value[0] ?? '';
-                    }
-                    const rawDate = new Date(value ?? '');
+                    const rawDate = new Date(e.detail.value ?? '');
                     const iso = isNaN(rawDate.getTime())
                       ? formattedToday
-                      : rawDate.toLocaleDateString('en-US', {
-                          month: '2-digit',
-                          day: '2-digit',
-                          year: 'numeric',
-                        });
+                      : `${String(rawDate.getMonth() + 1).padStart(2, '0')}-${String(rawDate.getDate()).padStart(2, '0')}-${rawDate.getFullYear()}`;
                     setSelectedDate(iso);
                     setSelectedDeskId(null);
                     setSelectedTime('');
@@ -176,26 +175,25 @@ const App: React.FC = () => {
                 />
               </IonModal>
 
-<IonList>
-  {filteredDesks.map((desk) => (
-    <IonItem
-      key={desk.id}
-      button
-      onClick={() => {
-        setSelectedDeskId(desk.id);
-        setSelectedTime('');
-      }}
-      className={selectedDeskId === desk.id ? 'selected-desk' : ''}
-    >
-      <IonLabel>
-        <h2>{desk.name}</h2>
-        <p>{desk.location}</p>
-        <small>Time Slots: {getAvailableTimes(desk.id).join(', ')}</small>
-      </IonLabel>
-    </IonItem>
-  ))}
-</IonList>
-
+              <IonList>
+                {filteredDesks.map((desk) => (
+                  <IonItem
+                    key={desk.id}
+                    button
+                    onClick={() => {
+                      setSelectedDeskId(desk.id);
+                      setSelectedTime('');
+                    }}
+                    className={selectedDeskId === desk.id ? 'selected-desk' : ''}
+                  >
+                    <IonLabel>
+                      <h2>{desk.name}</h2>
+                      <p>{desk.location}</p>
+                      <small>Time Slots: {getAvailableTimes(desk.id).join(', ')}</small>
+                    </IonLabel>
+                  </IonItem>
+                ))}
+              </IonList>
 
               {selectedDeskId && (
                 <IonItem>
@@ -242,7 +240,7 @@ const App: React.FC = () => {
                       setShowConfirmUnreserve(true);
                     }}
                   >
-                    Unreserve
+                    Release
                   </IonButton>
                 </IonItem>
               ))}
