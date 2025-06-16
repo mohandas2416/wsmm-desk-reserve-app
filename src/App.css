@@ -1,4 +1,4 @@
-.selected-desk {
-  background-color: #d0e7ff !important;
-  border-radius: 8px;
+ion-item.selected-desk {
+  --background: #d0e7ff;
+  --border-radius: 8px;
 }
