@@ -14,7 +14,9 @@ import {
   IonPage,
   IonSelect,
   IonSelectOption,
-  IonAlert
+  IonAlert,
+  IonDatetime,
+  IonDatetimeButton
 } from '@ionic/react';
 import React, { useState } from 'react';
 
@@ -25,8 +27,6 @@ interface Desk {
   slots: { date: string; times: string[] }[];
 }
 
-const AVAILABLE_DATES = ['2025-06-17', '2025-06-18', '2025-06-19'];
-
 const MAP_IMAGES = [
   'https://via.placeholder.com/300x200?text=Desk+Map+1',
   'https://via.placeholder.com/300x200?text=Desk+Map+2',
@@ -34,8 +34,15 @@ const MAP_IMAGES = [
 ];
 
 const App: React.FC = () => {
+  const today = new Date();
+  const formattedToday = today.toLocaleDateString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric'
+  });
+
   const [currentTab, setCurrentTab] = useState<'available' | 'reserved'>('available');
-  const [selectedDate, setSelectedDate] = useState(AVAILABLE_DATES[0]);
+  const [selectedDate, setSelectedDate] = useState(formattedToday);
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedDeskId, setSelectedDeskId] = useState<number | null>(null);
   const [selectedDesk, setSelectedDesk] = useState<{ name: string; location: string } | null>(null);
@@ -44,6 +51,7 @@ const App: React.FC = () => {
   const [showConfirmReserve, setShowConfirmReserve] = useState(false);
   const [showConfirmUnreserve, setShowConfirmUnreserve] = useState(false);
   const [deskToUnreserveIndex, setDeskToUnreserveIndex] = useState<number | null>(null);
+  const [showDateModal, setShowDateModal] = useState(false);
 
   const [availableDesks, setAvailableDesks] = useState<Desk[]>([
     {
@@ -51,8 +59,8 @@ const App: React.FC = () => {
       name: 'Desk A1',
       location: 'Floor 1',
       slots: [
-        { date: '2025-06-17', times: ['09:00 AM', '01:00 PM'] },
-        { date: '2025-06-18', times: ['10:00 AM'] },
+        { date: formattedToday, times: ['09:00 AM - 11:00 AM', '01:00 PM - 03:00 PM'] },
+        { date: '06-18-2025', times: ['10:00 AM - 12:00 PM'] },
       ],
     },
     {
@@ -60,8 +68,8 @@ const App: React.FC = () => {
       name: 'Desk A2',
       location: 'Floor 2',
       slots: [
-        { date: '2025-06-17', times: ['11:00 AM'] },
-        { date: '2025-06-19', times: ['02:00 PM'] },
+        { date: formattedToday, times: ['11:00 AM - 01:00 PM'] },
+        { date: '06-19-2025', times: ['02:00 PM - 04:00 PM'] },
       ],
     },
     {
@@ -69,7 +77,7 @@ const App: React.FC = () => {
       name: 'Desk B1',
       location: 'Floor 3',
       slots: [
-        { date: '2025-06-18', times: ['08:00 AM'] },
+        { date: '06-18-2025', times: ['08:00 AM - 10:00 AM'] },
       ],
     },
   ]);
@@ -140,36 +148,54 @@ const App: React.FC = () => {
             <>
               <IonItem>
                 <IonLabel>Date</IonLabel>
-                <IonSelect value={selectedDate} onIonChange={(e) => {
-                  setSelectedDate(e.detail.value);
-                  setSelectedDeskId(null);
-                  setSelectedTime('');
-                }}>
-                  {AVAILABLE_DATES.map((date, i) => (
-                    <IonSelectOption key={i} value={date}>{date}</IonSelectOption>
-                  ))}
-                </IonSelect>
+                <IonDatetimeButton datetime="date-select" onClick={() => setShowDateModal(true)} />
               </IonItem>
 
-              <IonList>
-                {filteredDesks.map((desk) => (
-                  <IonItem
-                    key={desk.id}
-                    button
-                    onClick={() => {
-                      setSelectedDeskId(desk.id);
-                      setSelectedTime('');
-                    }}
-                    color={selectedDeskId === desk.id ? 'light' : ''}
-                  >
-                    <IonLabel>
-                      <h2>{desk.name}</h2>
-                      <p>{desk.location}</p>
-                      <small>Available on {selectedDate}</small>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
+              <IonModal keepContentsMounted={true} isOpen={showDateModal}>
+                <IonDatetime
+                  id="date-select"
+                  presentation="date"
+                  onIonChange={(e) => {
+                    let value = e.detail.value;
+                    if (Array.isArray(value)) {
+                      value = value[0] ?? '';
+                    }
+                    const rawDate = new Date(value ?? '');
+                    const iso = isNaN(rawDate.getTime())
+                      ? formattedToday
+                      : rawDate.toLocaleDateString('en-US', {
+                          month: '2-digit',
+                          day: '2-digit',
+                          year: 'numeric',
+                        });
+                    setSelectedDate(iso);
+                    setSelectedDeskId(null);
+                    setSelectedTime('');
+                    setShowDateModal(false);
+                  }}
+                />
+              </IonModal>
+
+<IonList>
+  {filteredDesks.map((desk) => (
+    <IonItem
+      key={desk.id}
+      button
+      onClick={() => {
+        setSelectedDeskId(desk.id);
+        setSelectedTime('');
+      }}
+      className={selectedDeskId === desk.id ? 'selected-desk' : ''}
+    >
+      <IonLabel>
+        <h2>{desk.name}</h2>
+        <p>{desk.location}</p>
+        <small>Time Slots: {getAvailableTimes(desk.id).join(', ')}</small>
+      </IonLabel>
+    </IonItem>
+  ))}
+</IonList>
+
 
               {selectedDeskId && (
                 <IonItem>
@@ -223,7 +249,6 @@ const App: React.FC = () => {
             </IonList>
           )}
 
-          {/* Confirm Reservation */}
           <IonAlert
             isOpen={showConfirmReserve}
             onDidDismiss={() => setShowConfirmReserve(false)}
@@ -235,7 +260,6 @@ const App: React.FC = () => {
             ]}
           />
 
-          {/* Confirm Unreservation */}
           <IonAlert
             isOpen={showConfirmUnreserve}
             onDidDismiss={() => setShowConfirmUnreserve(false)}
@@ -247,7 +271,6 @@ const App: React.FC = () => {
             ]}
           />
 
-          {/* Modal with map link */}
           <IonModal isOpen={showModal} onDidDismiss={() => {
             setShowModal(false);
             setMapImage('');
