@@ -163,7 +163,9 @@ const App: React.FC = () => {
                   id="date-select"
                   presentation="date"
                   onIonChange={(e) => {
-                    const rawDate = new Date(e.detail.value ?? '');
+                    const value = e.detail.value;
+                    const dateStr = Array.isArray(value) ? value[0] ?? '' : value ?? '';
+                    const rawDate = new Date(dateStr);
                     const iso = isNaN(rawDate.getTime())
                       ? formattedToday
                       : `${String(rawDate.getMonth() + 1).padStart(2, '0')}-${String(rawDate.getDate()).padStart(2, '0')}-${rawDate.getFullYear()}`;
