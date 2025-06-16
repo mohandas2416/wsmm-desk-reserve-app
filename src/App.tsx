@@ -264,7 +264,7 @@ const App: React.FC = () => {
             isOpen={showConfirmUnreserve}
             onDidDismiss={() => setShowConfirmUnreserve(false)}
             header="Cancel Reservation"
-            message="Are you sure you want to unreserve this desk?"
+            message="Are you sure you want to release this desk?"
             buttons={[
               { text: 'No', role: 'cancel' },
               { text: 'Yes', handler: unreserveDesk },
